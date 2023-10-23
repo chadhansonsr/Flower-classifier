@@ -2,14 +2,11 @@
 
 import argparse
 import torch
-from torch import nn
-from torch import optim
+import torch.nn as nn
+import torch.optim as optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms, models
-import json
 from torch.utils.data import DataLoader
-from PIL import Image
-import numpy as np
 from functions import load_data
 
 parser = argparse.ArgumentParser(description="Train a new neural network")

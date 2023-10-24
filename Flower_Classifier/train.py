@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
-from functions import load_data, new_classifier, train_model
+from functions import load_data, new_classifier, train_model, test_model, save_model
 
 parser = argparse.ArgumentParser(description="Train a new neural network")
 
@@ -44,7 +44,8 @@ optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
 # Train model
 model, optimizer = train_model(model, epochs, trainloader, validloader, optimizer, criterion, GPU)
 
-# print(args.data_directory)
-# print(args.arch)
-# print(args.epochs)
-# print(model)
+# Test model
+test_model(model, testloader, criterion, GPU)
+
+# Save model
+save_model(model, epochs, training_data)

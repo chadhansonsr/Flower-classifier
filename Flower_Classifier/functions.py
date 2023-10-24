@@ -4,7 +4,7 @@ import argparse
 
 # %matplotlib inline
 # %config InlineBackend.figure_format = 'retina'
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 import torch
 from torch import nn
@@ -16,9 +16,8 @@ from torch.utils.data import DataLoader
 from PIL import Image
 import numpy as np
 import seaborn as sb
+import os
 
-# def device():
-#     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def load_data(data_dir):
@@ -73,7 +72,7 @@ def new_classifier(model):
 def train_model(model, epochs, trainloader, validloader, optimizer, criterion, GPU):
     steps = 0
     running_loss = 0
-    print_every = 25
+    print_every = 50
     torch.cuda.empty_cache()
 
     if GPU == True:
@@ -125,3 +124,40 @@ def train_model(model, epochs, trainloader, validloader, optimizer, criterion, G
                 model.train()
     return model, optimizer
 
+
+def test_model(model, testloader, criterion, GPU):
+    test_loss = 0
+    accuracy = 0
+    torch.cuda.empty_cache()
+
+    if GPU == True:
+        model.to("cuda")
+    else:
+        pass
+
+    with torch.no_grad():
+        model.eval()
+        for inputs, labels in testloader:
+            inputs, labels = inputs.to("cuda"), labels.to("cuda")
+            outputs = model.forward(inputs)
+            batch_loss = criterion(outputs, labels)
+            
+            test_loss += batch_loss.item()
+            probs = torch.exp(outputs)
+            top_p, top_class = probs.topk(1, dim=1)
+            compare = top_class == labels.view(*top_class.shape)
+            accuracy += torch.mean(compare.type(torch.FloatTensor)).item()
+
+    model.train()
+
+    print("Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
+
+def save_model(model, epochs, training_data):
+    checkpoint = {"state_dict": model.state_dict(),
+                "classifier": model.classifier,
+                "epochs": epochs,
+                "class_to_idx": training_data.class_to_idx
+                }
+
+    checkpoint_path = os.path.join(".", "checkpoint.pth")
+    torch.save(checkpoint, "checkpoint.pth")

@@ -31,5 +31,9 @@ gpu = args.GPU
 
 training_data, validation_data, testing_data, trainloader, validloader, testloader = load_data(data_dir)
 
+model = getattr(models, args.arch)(weights="DEFAULT")
+print(model)
+
 print(args.data_directory)
 print(args.arch)
+print(args.epochs)

@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
-from functions import load_data, new_classifier
+from functions import load_data, new_classifier, train_model
 
 parser = argparse.ArgumentParser(description="Train a new neural network")
 
@@ -27,7 +27,7 @@ arch = args.arch
 learning_rate = args.learning_rate
 hidden_units = args.hidden_units
 epochs = args.epochs
-gpu = args.GPU
+GPU = args.GPU
 
 training_data, validation_data, testing_data, trainloader, validloader, testloader = load_data(data_dir)
 
@@ -37,9 +37,14 @@ model = getattr(models, args.arch)(weights="DEFAULT")
 # Attach new classifier
 new_classifier(model)
 
+criterion = torch.nn.CrossEntropyLoss()
 
+optimizer = optim.Adam(model.classifier.parameters(), lr=0.001)
+
+# Train model
+model, optimizer = train_model(model, epochs, trainloader, validloader, optimizer, criterion, GPU)
 
 # print(args.data_directory)
 # print(args.arch)
 # print(args.epochs)
-print(model)
+# print(model)

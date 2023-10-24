@@ -55,3 +55,14 @@ def load_data(data_dir):
 
     return training_data, validation_data, testing_data, trainloader, validloader, testloader
 
+def new_classifier(model):
+    for param in model.parameters():
+        param.requires_grad = False
+        
+        model.classifier = nn.Sequential(nn.Linear(25088, 256),
+                                        nn.ReLU(),
+                                        nn.Dropout(0.5),
+                                        nn.Linear(256, 102),
+                                        nn.LogSoftmax(dim=1)
+                                        )
+        return model

@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
-from functions import load_data
+from functions import load_data, new_classifier
 
 parser = argparse.ArgumentParser(description="Train a new neural network")
 
@@ -31,9 +31,15 @@ gpu = args.GPU
 
 training_data, validation_data, testing_data, trainloader, validloader, testloader = load_data(data_dir)
 
+# Load pre-trained model
 model = getattr(models, args.arch)(weights="DEFAULT")
-print(model)
 
-print(args.data_directory)
-print(args.arch)
-print(args.epochs)
+# Attach new classifier
+new_classifier(model)
+
+
+
+# print(args.data_directory)
+# print(args.arch)
+# print(args.epochs)
+print(model)

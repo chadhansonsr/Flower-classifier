@@ -84,11 +84,7 @@ def train_model(model, epochs, trainloader, validloader, optimizer, criterion, G
         for inputs, labels in trainloader:
             steps += 1
             
-            if GPU == True:
-                inputs, labels = inputs.to("cuda"), labels.to("cuda")
-            else:
-                pass
-            
+           
             optimizer.zero_grad()
 
             outputs = model.forward(inputs)
@@ -161,3 +157,47 @@ def save_model(model, epochs, training_data):
 
     checkpoint_path = os.path.join(".", "checkpoint.pth")
     torch.save(checkpoint, "checkpoint.pth")
+
+def process_image(image):
+    ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
+        returns an Numpy array
+    '''
+    
+    # TODO: Process a PIL image for use in a PyTorch model
+    image = Image.open(f"{image}" + ".jpg")
+
+    transform = transforms.Compose([transforms.Resize(256),
+                                    transforms.CenterCrop(224),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize([0.485, 0.456, 0.406],
+                                                         [0.229, 0.224, 0.225])])
+    
+    pil = transform(image)
+    array = np.array(pil)
+
+    return array
+
+def predict(image_path, model, top_k, GPU):
+    ''' Predict the class (or classes) of an image using a trained deep learning model.
+    '''
+    model.eval()
+    if GPU == True:
+        model.to("cuda")
+    else:
+        model.to("cpu")
+
+    image = process_image(image_path)
+    image_tensor = torch.from_numpy(image).unsqueeze(0).float()
+
+    with torch.no_grad():
+        output = model.forward(image_tensor.cuda())
+    probs = torch.exp(output)
+
+    # Get the topk probabilities and indices
+    top_probs, top_indices = probs.topk(top_k)
+    
+    # Convert indices to class labels
+    idx_to_class = {val: key for key, val in model.class_to_idx.items()}
+    top_classes = [idx_to_class[idx.item()] for idx in top_indices[0]]
+    
+    return top_probs[0].tolist(), top_classes

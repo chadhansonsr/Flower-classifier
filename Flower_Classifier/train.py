@@ -16,7 +16,7 @@ parser.add_argument("--save_directory", type=str, default="checkpoint.pth", help
 parser.add_argument("--arch", type=str, default="vgg16", help="architecture (default: vgg16)")
 parser.add_argument("--learning_rate", type=float, default=0.001, help="learning rate (default: 0.001)")
 parser.add_argument("--hidden_units", type=int, default=256, help="hidden units (default: 256)")
-parser.add_argument("--epochs", type=int, default=15, help="epochs (default: 15)")
+parser.add_argument("--epochs", type=int, default=25, help="epochs (default: 15)")
 parser.add_argument("--GPU", action="store_true", help="use GPU for training")
 
 args = parser.parse_args()

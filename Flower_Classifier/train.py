@@ -32,7 +32,7 @@ GPU = args.GPU
 training_data, validation_data, testing_data, trainloader, validloader, testloader = load_data(data_dir)
 
 # Load pre-trained model
-model = getattr(models, args.arch)(weights="DEFAULT")
+model = getattr(models, args.arch)(pretrained=True)
 
 # Attach new classifier
 new_classifier(model)

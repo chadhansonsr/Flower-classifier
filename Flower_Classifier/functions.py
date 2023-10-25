@@ -20,7 +20,7 @@ import os
 
 
 
-def load_data(data_dir):
+def load_data():
     data_dir = 'flowers'
     train_dir = data_dir + '/train'
     valid_dir = data_dir + '/valid'
@@ -75,10 +75,10 @@ def train_model(model, epochs, trainloader, validloader, optimizer, criterion, G
     print_every = 50
     torch.cuda.empty_cache()
 
-    if GPU == True:
+    if GPU and torch.cuda.is_available():
         model.to("cuda")
     else:
-        pass
+        model.to("cpu")
 
     for epoch in range(epochs):
         for inputs, labels in trainloader:
@@ -125,10 +125,10 @@ def test_model(model, testloader, criterion, GPU):
     accuracy = 0
     torch.cuda.empty_cache()
 
-    if GPU == True:
+    if GPU and torch.cuda.is_available():
         model.to("cuda")
     else:
-        pass
+        model.to("cpu")
 
     with torch.no_grad():
         model.eval()
@@ -175,8 +175,7 @@ def process_image(image):
 def predict(image_path, model, top_k, GPU):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
     '''
-    model.eval()
-    if GPU == True:
+    if GPU and torch.cuda.is_available():
         model.to("cuda")
     else:
         model.to("cpu")

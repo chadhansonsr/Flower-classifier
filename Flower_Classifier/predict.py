@@ -8,7 +8,6 @@ import json
 from torch.utils.data import DataLoader
 from PIL import Image
 import numpy as np
-import seaborn as sb
 from functions import load_data, process_image, predict, new_classifier
 
 parser = argparse.ArgumentParser(description="Predict flower name")

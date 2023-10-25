@@ -84,7 +84,6 @@ def train_model(model, epochs, trainloader, validloader, optimizer, criterion, G
         for inputs, labels in trainloader:
             steps += 1
             
-           
             optimizer.zero_grad()
 
             outputs = model.forward(inputs)
@@ -162,10 +161,6 @@ def process_image(image):
     ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
         returns an Numpy array
     '''
-    
-    # TODO: Process a PIL image for use in a PyTorch model
-    image = Image.open(f"{image}" + ".jpg")
-
     transform = transforms.Compose([transforms.Resize(256),
                                     transforms.CenterCrop(224),
                                     transforms.ToTensor(),

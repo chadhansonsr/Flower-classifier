@@ -1,11 +1,6 @@
 # This file contains all necessary functions and classes for running train/predict.py
 
 import argparse
-
-# %matplotlib inline
-# %config InlineBackend.figure_format = 'retina'
-import matplotlib.pyplot as plt
-
 import torch
 from torch import nn
 from torch import optim
@@ -18,42 +13,41 @@ import numpy as np
 import seaborn as sb
 import os
 
-
-
-def load_data():
+def load_data(data_dir):
     data_dir = 'flowers'
     train_dir = data_dir + '/train'
     valid_dir = data_dir + '/valid'
     test_dir = data_dir + '/test'
     
-    training_transforms = transforms.Compose([transforms.RandomRotation(45),
-                                        transforms.RandomResizedCrop(224),
-                                        transforms.RandomVerticalFlip(),
-                                        transforms.ToTensor(),
-                                        transforms.Normalize([0.485, 0.456, 0.406],
-                                                            [0.229, 0.224, 0.225])])
+    training_transforms = transforms.Compose([
+        transforms.RandomRotation(45),
+        transforms.RandomResizedCrop(224),
+        transforms.RandomVerticalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
 
-    validation_transforms = transforms.Compose([transforms.Resize(255),
-                                        transforms.CenterCrop(224),
-                                        transforms.ToTensor(),
-                                        transforms.Normalize([0.485, 0.456, 0.406],
-                                                            [0.229, 0.224, 0.225])])
+    validation_transforms = transforms.Compose([
+        transforms.Resize(255),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
 
-    testing_transforms = transforms.Compose([transforms.Resize(255),
-                                        transforms.CenterCrop(224),
-                                        transforms.ToTensor(),
-                                        transforms.Normalize([0.485, 0.456, 0.406],
-                                                            [0.229, 0.224, 0.225])])
-
-
+    testing_transforms = transforms.Compose([
+        transforms.Resize(255),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
 
     training_data = datasets.ImageFolder(train_dir, transform=training_transforms)
     validation_data = datasets.ImageFolder(valid_dir, transform=validation_transforms)
     testing_data = datasets.ImageFolder(test_dir, transform=testing_transforms)
 
-    trainloader = DataLoader(training_data, batch_size = 32, shuffle=True)
-    validloader = DataLoader(validation_data, batch_size = 32)
-    testloader = DataLoader(testing_data, batch_size = 32)
+    trainloader = DataLoader(training_data, batch_size=32, shuffle=True)
+    validloader = DataLoader(validation_data, batch_size=32)
+    testloader = DataLoader(testing_data, batch_size=32)
 
     return training_data, validation_data, testing_data, trainloader, validloader, testloader
 
@@ -61,12 +55,13 @@ def new_classifier(model):
     for param in model.parameters():
         param.requires_grad = False
         
-    model.classifier = nn.Sequential(nn.Linear(25088, 256),
-                                        nn.ReLU(),
-                                        nn.Dropout(0.5),
-                                        nn.Linear(256, 102),
-                                        nn.LogSoftmax(dim=1)
-                                        )
+    model.classifier = nn.Sequential(
+        nn.Linear(25088, 256),
+        nn.ReLU(),
+        nn.Dropout(0.5),
+        nn.Linear(256, 102),
+        nn.LogSoftmax(dim=1)
+    )
     return model
 
 def train_model(model, epochs, trainloader, validloader, optimizer, criterion, GPU):
@@ -85,6 +80,9 @@ def train_model(model, epochs, trainloader, validloader, optimizer, criterion, G
             steps += 1
             
             optimizer.zero_grad()
+
+            inputs = inputs.to('cuda')  # Move inputs to GPU
+            labels = labels.to('cuda')  # Move labels to GPU
 
             outputs = model.forward(inputs)
             loss = criterion(outputs, labels)
@@ -114,11 +112,10 @@ def train_model(model, epochs, trainloader, validloader, optimizer, criterion, G
                     f"Training loss: {running_loss/print_every:.3f}.."
                     f"Test loss: {test_loss/len(validloader):.3f}.."
                     f"Test accuracy: {accuracy/len(validloader):.3f}.."
-                    )
+                )
                 running_loss = 0
                 model.train()
     return model, optimizer
-
 
 def test_model(model, testloader, criterion, GPU):
     test_loss = 0
@@ -148,24 +145,23 @@ def test_model(model, testloader, criterion, GPU):
     print("Test Accuracy: {:.3f}".format(accuracy/len(testloader)))
 
 def save_model(model, epochs, training_data):
-    checkpoint = {"state_dict": model.state_dict(),
-                "classifier": model.classifier,
-                "epochs": epochs,
-                "class_to_idx": training_data.class_to_idx
-                }
+    checkpoint = {
+        "state_dict": model.state_dict(),
+        "classifier": model.classifier,
+        "epochs": epochs,
+        "class_to_idx": training_data.class_to_idx
+    }
 
     checkpoint_path = os.path.join(".", "checkpoint.pth")
     torch.save(checkpoint, "checkpoint.pth")
 
 def process_image(image):
-    ''' Scales, crops, and normalizes a PIL image for a PyTorch model,
-        returns an Numpy array
-    '''
-    transform = transforms.Compose([transforms.Resize(256),
-                                    transforms.CenterCrop(224),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize([0.485, 0.456, 0.406],
-                                                         [0.229, 0.224, 0.225])])
+    transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
     
     pil = transform(image)
     array = np.array(pil)
@@ -173,8 +169,6 @@ def process_image(image):
     return array
 
 def predict(image_path, model, top_k, GPU):
-    ''' Predict the class (or classes) of an image using a trained deep learning model.
-    '''
     if GPU and torch.cuda.is_available():
         model.to("cuda")
     else:
